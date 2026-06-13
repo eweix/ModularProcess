@@ -15,8 +15,10 @@ Date = str | datetime.date | datetime.datetime
 or a :class:`datetime.datetime`."""
 
 
-class MetadataDict(TypedDict):
-    """Dictionary holding the four metadata fields extracted from a filename.
+class MetadataDict(TypedDict, total=False):
+    """Dictionary holding optional metadata overrides.
+
+    ``total=False`` means that not all fields are required.
 
     Attributes:
         name: Experiment or sequence name.
@@ -147,13 +149,11 @@ class LoaderLike:
             self.items = []
 
     def _gather(self, root: str) -> list[str]:
-        """Return a list of **full file paths** under *root* to load.
+        """Return a list of full file paths under :arg:`root` to load.
 
         Override in subclasses to filter by filename pattern.  Subclass
-        implementations **must** return full paths (joined with *root*)
+        implementations **must** return full paths (joined with :arg:`root`)
         so that :meth:`_construct` receives a usable path.
-
-        The default returns all entries in *root*.
         """
         return [join(root, f) for f in os.listdir(root)]
 
