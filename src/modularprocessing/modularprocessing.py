@@ -31,20 +31,6 @@ class MetadataDict(TypedDict):
     date: str | None
 
 
-class MetadataOverride(TypedDict, total=False):
-    """Optional overrides for metadata fields that take precedence
-    over values parsed from the filename.
-
-    Each field is optional (``total=False``) so callers can provide
-    only the overrides they need.
-    """
-
-    name: str | None
-    expID: str | None
-    sample: str | None
-    date: Date | None
-
-
 class FileLike:
     """Wrapper around a file that parses structured metadata from its name.
 
@@ -62,7 +48,7 @@ class FileLike:
     def __init__(
         self,
         path: str,
-        **metadata: Unpack[MetadataOverride],
+        **metadata: Unpack[MetadataDict],
     ) -> None:
         """Initialise the wrapper and parse metadata from the file path.
 
@@ -143,7 +129,7 @@ class LoaderLike:
     def __init__(
         self,
         root: str | None = None,
-        **metadata: Unpack[MetadataOverride],
+        **metadata: Unpack[MetadataDict],
     ):
         """Scan *root* and build a ``FileLike`` for each discovered file.
 
@@ -171,14 +157,14 @@ class LoaderLike:
         """
         return [join(root, f) for f in os.listdir(root)]
 
-    def _construct(self, f: str, **metadata: Unpack[MetadataOverride]):
+    def _construct(self, f: str, **metadata: Unpack[MetadataDict]):
         """Build a ``FileLike`` (or subclass) for the given path.
 
         Override in subclasses to return a specialised ``FileLike``.
         """
         return FileLike(f, **metadata)
 
-    def add_files(self, paths: str | list[str], **metadata: Unpack[MetadataOverride]):
+    def add_files(self, paths: str | list[str], **metadata: Unpack[MetadataDict]):
         """Append additional file paths to :attr:`items`."""
         if isinstance(paths, str):
             paths = [paths]
