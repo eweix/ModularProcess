@@ -8,11 +8,11 @@ abstract interfaces that concrete implementations specialise.
 import datetime
 import os
 from os.path import join
-from typing import TypedDict, Unpack
+from typing import Union
 
-Date = str | datetime.date | datetime.datetime
-"""A date value that may be supplied as an ISO string, a :class:`datetime.date`,
-or a :class:`datetime.datetime`."""
+from typing_extensions import TypedDict, Unpack
+
+Date = Union[str, datetime.date, datetime.datetime]
 
 
 class MetadataDict(TypedDict, total=False):
@@ -27,10 +27,10 @@ class MetadataDict(TypedDict, total=False):
         date: Date string in ``YYYY-MM-DD`` format.
     """
 
-    name: str | None
-    expID: str | None
-    sample: str | None
-    date: str | None
+    name: Union[str, None]
+    expID: Union[str, None]
+    sample: Union[str, None]
+    date: Union[str, None]
 
 
 class FileLike:
@@ -130,7 +130,7 @@ class LoaderLike:
 
     def __init__(
         self,
-        root: str | None = None,
+        root: Union[str, None] = None,
         **metadata: Unpack[MetadataDict],
     ):
         """Scan *root* and build a ``FileLike`` for each discovered file.
@@ -164,7 +164,7 @@ class LoaderLike:
         """
         return FileLike(f, **metadata)
 
-    def add_files(self, paths: str | list[str], **metadata: Unpack[MetadataDict]):
+    def add_files(self, paths: Union[str, list[str]], **metadata: Unpack[MetadataDict]):
         """Append additional file paths to :attr:`items`."""
         if isinstance(paths, str):
             paths = [paths]
@@ -182,8 +182,8 @@ class ProcessLike:
 
     def __init__(
         self,
-        dataset: LoaderLike | FileLike,
-        output_path: str | None = None,
+        dataset: Union[LoaderLike, FileLike],
+        output_path: Union[str, None] = None,
     ):
         """Initialise the processor with a dataset.
 

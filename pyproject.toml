@@ -1,13 +1,15 @@
 [project]
 name = "modularprocessing"
-version = "0.2.0"
+version = "0.1.0"
 description = "Core data abstractions for modular file processing in Python"
 readme = "README.md"
 authors = [
     { name = "eweix", email = "elliott@weix.us" }
 ]
-requires-python = ">=3.13"
-dependencies = []
+requires-python = ">=3.9"
+dependencies = [
+    "typing-extensions>=4.15.0",
+]
 
 [project.scripts]
 modularprocessing = "modularprocessing:main"
@@ -15,9 +17,6 @@ modularprocessing = "modularprocessing:main"
 [build-system]
 requires = ["uv_build>=0.11.16,<0.12.0"]
 build-backend = "uv_build"
-
-[tool.ruff]
-target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP"]
@@ -30,6 +29,6 @@ exclude = ["examples/"]
 [dependency-groups]
 dev = [
     "pyright>=1.1.410",
-    "pytest>=9.0.3",
+    "pytest>=8.4.2",
     "ruff>=0.15.17",
 ]
