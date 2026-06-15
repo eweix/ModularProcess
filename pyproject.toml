@@ -1,5 +1,5 @@
 [project]
-name = "modularprocessing"
+name = "modularprocess"
 version = "0.2.0"
 description = "Core data abstractions for modular file processing in Python"
 readme = "README.md"

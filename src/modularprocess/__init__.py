@@ -15,7 +15,7 @@ Typical usage::
         data = item.load()
 """
 
-from .modularprocessing import FileLike, LoaderLike, MetadataDict, ProcessLike
+from .modularprocess import FileLike, LoaderLike, MetadataDict, ProcessLike
 
 __all__ = [
     "FileLike",
