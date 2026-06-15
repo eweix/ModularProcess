@@ -44,7 +44,7 @@ class FileLike:
         path: Absolute or relative path to the file.
         parent: Parent directory of the file.
         stem: Basename of the file.
-        struct_name: Canonical structured filename built from metadata.
+        canonical: Canonical structured filename built from metadata.
     """
 
     def __init__(
@@ -87,7 +87,7 @@ class FileLike:
         if not m["date"]:
             m["date"] = datetime.datetime.now().strftime("%Y-%m-%d")
 
-        self.struct_name = self._format(m)
+        self.canonical = self._format(m)
 
     def _format(self, m: MetadataDict) -> str:
         """Format structured name according to spec."""
@@ -105,12 +105,12 @@ class FileLike:
         """Rename the file on disk to its canonical structured name.
 
         After calling this method the file at ``self.path`` will be
-        moved to ``self.parent / self.struct_name`` (preserving the
+        moved to ``self.parent / self.canonical`` (preserving the
         original file extension), overwriting any existing file at
         that location.
         """
         _, ext = os.path.splitext(self.path)
-        os.rename(self.path, join(self.parent, f"{self.struct_name}{ext}"))
+        os.rename(self.path, join(self.parent, f"{self.canonical}{ext}"))
 
 
 class LoaderLike:
@@ -160,7 +160,7 @@ class LoaderLike:
         """
         return FileLike(f, **metadata)
 
-    def add_files(self, paths: Union[str, list[str]], **metadata: Unpack[MetadataDict]):
+    def add_items(self, paths: Union[str, list[str]], **metadata: Unpack[MetadataDict]):
         """Append additional file paths to :attr:`items`."""
         if isinstance(paths, str):
             paths = [paths]
@@ -169,11 +169,11 @@ class LoaderLike:
 
 
 class ProcessLike:
-    """Orchestrates processing of a :class:`LoaderLike` or a single :class:`FileLike`.
+    """Orchestrates processing of a :class:`LoaderLike` or :class:`FileLike`.
 
     Attributes:
         output_path: Optional directory path for writing results.
-        data: The dataset (a :class:`LoaderLike`) or a single-file list.
+        inputs: A :class:`LoaderLike` or a list of :class:`FileLike`.
     """
 
     def __init__(
@@ -190,9 +190,10 @@ class ProcessLike:
         """
         self.output_path = output_path
         if isinstance(dataset, LoaderLike):
-            self.data = dataset
+            self.inputs = dataset
         else:
-            self.data = [dataset]
+            self.inputs = [dataset]
+        self.outputs = None  # prevents parsing errors, but fails silently if called
 
     def run(self):
         """Execute the processing pipeline.

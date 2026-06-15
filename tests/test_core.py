@@ -75,7 +75,7 @@ def test_minimal_file_constructs():
     assert f.path == "/data/2025-01-15_ABC-01-001_S1_test.csv"
     assert f.stem == "2025-01-15_ABC-01-001_S1_test.csv"
     assert f.parent == "/data"
-    assert f.struct_name == "2025-01-15_ABC-01-001_S1_test"
+    assert f.canonical == "2025-01-15_ABC-01-001_S1_test"
     assert f.load() == "data"
 
 
@@ -86,32 +86,32 @@ def test_metadata_override_takes_precedence():
         name="override_name",
         expID="OVR-99-888",
     )
-    assert "override_name" in f.struct_name
-    assert "OVR-99-888" in f.struct_name
+    assert "override_name" in f.canonical
+    assert "OVR-99-888" in f.canonical
 
 
 def test_date_override_str():
     f = MinimalFile("/data/file.csv", date="2024-12-01")
-    assert f.struct_name.startswith("2024-12-01")
+    assert f.canonical.startswith("2024-12-01")
 
 
 def test_date_override_datetime():
     f = MinimalFile("/data/file.csv", date=datetime.date(2024, 6, 15))  # type: ignore - date can take datetime.date
-    assert f.struct_name.startswith("2024-06-15")
+    assert f.canonical.startswith("2024-06-15")
 
 
 def test_date_defaults_to_today():
     """When no date is parsed or provided, fall back to today."""
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     f = NoDateFile("/data/file.csv")
-    assert f.struct_name.startswith(today)
+    assert f.canonical.startswith(today)
 
 
-def test_struct_name_contains_none_when_missing():
+def test_canonical_contains_none_when_missing():
     """Unparsed fields produce literal 'None' in the canonical name."""
     f = NameOnlyFile("/data/file.csv")
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    assert f.struct_name == f"{today}_None_None_only_name"
+    assert f.canonical == f"{today}_None_None_only_name"
 
 
 def test_canonize_renames_file(tmp_path):
@@ -122,7 +122,7 @@ def test_canonize_renames_file(tmp_path):
 
     f = MinimalFile(str(src))
 
-    target = d / f"{f.struct_name}.csv"
+    target = d / f"{f.canonical}.csv"
 
     f.canonize()
     assert target.exists()
@@ -141,8 +141,8 @@ def test_loaderlike_empty_root():
     assert loader.items == []
 
 
-def test_loaderlike_add_files(tmp_path):
-    """add_files extends items with new FileLike objects."""
+def test_loaderlike_add_items(tmp_path):
+    """add_items extends items with new FileLike objects."""
 
     class CustomLoader(LoaderLike):
         def _construct(self, f, **metadata):
@@ -152,7 +152,7 @@ def test_loaderlike_add_files(tmp_path):
     assert len(loader.items) == 0
 
     (tmp_path / "extra.csv").write_text("")
-    loader.add_files([str(tmp_path / "extra.csv")])
+    loader.add_items([str(tmp_path / "extra.csv")])
     # assert len(loader.items) == 1  # this assertion is redundant to the next one
     assert loader.items[0].stem == "extra.csv"
 
@@ -219,7 +219,7 @@ def test_loaderlike_metadata_propagates_to_files(tmp_path):
 
     (tmp_path / "file.csv").write_text("")
     loader = InspectLoader(str(tmp_path), expID="OVERRIDDEN")
-    assert "OVERRIDDEN" in loader.items[0].struct_name
+    assert "OVERRIDDEN" in loader.items[0].canonical
 
 
 # ---------------------------------------------------------------------------
@@ -228,7 +228,7 @@ def test_loaderlike_metadata_propagates_to_files(tmp_path):
 
 
 def test_processlike_wraps_loaderlike(tmp_path):
-    """ProcessLike accepts a LoaderLike and stores it as .data."""
+    """ProcessLike accepts a LoaderLike and stores it as .inputs."""
 
     class CustomLoader(LoaderLike):
         def _construct(self, f, **metadata):
@@ -237,16 +237,16 @@ def test_processlike_wraps_loaderlike(tmp_path):
     (tmp_path / "a.csv").write_text("")
     loader = CustomLoader(str(tmp_path))
     p = ProcessLike(loader)
-    assert p.data is loader
+    assert p.inputs is loader
 
 
 def test_processlike_wraps_single_file(tmp_path):
     """ProcessLike accepts a single FileLike and wraps it in a list."""
     f = MinimalFile(str(tmp_path / "x.csv"))
     p = ProcessLike(f)
-    assert isinstance(p.data, list)
-    assert len(p.data) == 1
-    assert p.data[0] is f
+    assert isinstance(p.inputs, list)
+    assert len(p.inputs) == 1
+    assert p.inputs[0] is f
 
 
 def test_processlike_with_subclass_loader(tmp_path):
@@ -259,7 +259,7 @@ def test_processlike_with_subclass_loader(tmp_path):
     (tmp_path / "a.csv").write_text("")
     loader = SubLoader(str(tmp_path))
     p = ProcessLike(loader)
-    assert p.data is loader
+    assert p.inputs is loader
 
 
 def test_processlike_run_raises_notimplemented():
