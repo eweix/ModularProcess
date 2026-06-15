@@ -52,8 +52,8 @@ wheels = [
 ]
 
 [[package]]
-name = "modularprocessing"
-version = "0.2.0"
+name = "modularprocess"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "typing-extensions" },
