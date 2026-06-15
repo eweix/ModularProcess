@@ -38,7 +38,7 @@ class FileLike:
 
     ``FileLike`` extracts metadata fields (name, experiment ID, sample, date)
     from a file path and exposes a canonical structured filename. Subclasses
-    must implement :meth:`_parse_path`, :meth:`load`, and :meth:`write`.
+    must implement :meth:`_parse_path` and :meth:`load`.
 
     Attributes:
         path: Absolute or relative path to the file.
@@ -111,10 +111,6 @@ class FileLike:
         """
         _, ext = os.path.splitext(self.path)
         os.rename(self.path, join(self.parent, f"{self.struct_name}{ext}"))
-
-    def write(self, root: str):
-        """Write file to storage, with standardized name."""
-        raise NotImplementedError
 
 
 class LoaderLike:

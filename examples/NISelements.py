@@ -1,7 +1,7 @@
 """``FileLike`` / ``LoaderLike`` subclasses for Nikon NIS-Elements.
 
-Parses ``.nd2`` filenames produced by NIS-Elements, loads image data as
-NumPy arrays, and writes TIFF output with canonical structured names.
+Parses ``.nd2`` filenames produced by NIS-Elements and loads image data as
+NumPy arrays.
 
 Our NISelements files are stored in directories formatted as
 
@@ -49,13 +49,6 @@ class NISWellFile(FileLike):
 
         return imread(self.path)
 
-    def write(self, root: str):
-        from nd2 import ND2File
-
-        out = join(root, f"{self.struct_name}.tif")
-        with ND2File(self.path) as f:
-            f.write_tiff(out)
-
 
 class NISWellLoopLoader(LoaderLike):
     """``LoaderLike`` that discovers well-named ``.nd2`` files in a directory.
@@ -99,13 +92,6 @@ class NISPointFile(FileLike):
         from nd2 import imread
 
         return imread(self.path)
-
-    def write(self, root: str):
-        from nd2 import ND2File
-
-        out = join(root, f"{self.struct_name}.tif")
-        with ND2File(self.path) as f:
-            f.write_tiff(out)
 
 
 class NISPointLoopLoader(LoaderLike):

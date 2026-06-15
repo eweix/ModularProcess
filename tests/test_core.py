@@ -31,9 +31,6 @@ class MinimalFile(FileLike):
     def load(self):
         return "data"
 
-    def write(self, root: str):
-        pass
-
 
 class NoDateFile(FileLike):
     """FileLike that never provides a date (tests fallback to today)."""
@@ -44,9 +41,6 @@ class NoDateFile(FileLike):
     def load(self):
         pass
 
-    def write(self, root: str):
-        pass
-
 
 class NameOnlyFile(FileLike):
     """FileLike that only provides a name, leaving other fields None."""
@@ -55,9 +49,6 @@ class NameOnlyFile(FileLike):
         return {"name": "only_name", "expID": None, "sample": None, "date": None}
 
     def load(self):
-        pass
-
-    def write(self, root: str):
         pass
 
 
@@ -78,21 +69,14 @@ def test_filelike_raises_notimplemented_on_load():
         FileLike("/some/path/file.csv")
 
 
-def test_filelike_raises_notimplemented_on_write():
-    """write() on base FileLike must raise NotImplementedError."""
-    with pytest.raises(NotImplementedError):
-        FileLike("/some/path/file.csv")
-
-
 def test_minimal_file_constructs():
-    """A minimal subclass that overrides all three methods works."""
+    """Overriding :meth:``load`` and :meth:``_parse_path`` works."""
     f = MinimalFile("/data/2025-01-15_ABC-01-001_S1_test.csv")
     assert f.path == "/data/2025-01-15_ABC-01-001_S1_test.csv"
     assert f.stem == "2025-01-15_ABC-01-001_S1_test.csv"
     assert f.parent == "/data"
     assert f.struct_name == "2025-01-15_ABC-01-001_S1_test"
     assert f.load() == "data"
-    assert f.write("/out") is None
 
 
 def test_metadata_override_takes_precedence():
@@ -215,9 +199,6 @@ def test_loaderlike_custom_construct(tmp_path):
             return {"name": "c", "expID": "c", "sample": "c", "date": None}
 
         def load(self):
-            pass
-
-        def write(self, root: str):
             pass
 
     class CustomLoader(LoaderLike):
