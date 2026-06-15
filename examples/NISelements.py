@@ -30,11 +30,11 @@ class NISWellFile(FileLike):
         Point<sample>_Channel<...>_Seq<4-digit-seq>.nd2
     """
 
-    def _parse_path(self, f: str) -> MetadataDict:
+    def _parse_path(self) -> MetadataDict:
         pattern = re.compile(
             r"Point(?P<sample>.*)_Channel(.*)_Seq(?P<name>\d{4})\.nd2$"
         )
-        match = pattern.search(f)
+        match = pattern.search(self.stem)
         if match:
             return {
                 "sample": match.group("sample"),
@@ -74,11 +74,11 @@ class NISPointFile(FileLike):
         Point<sample>_Channel<...>_Seq<4-digit-seq>.nd2
     """
 
-    def _parse_path(self, f: str) -> MetadataDict:
+    def _parse_path(self) -> MetadataDict:
         pattern = re.compile(
             r"^Point(?P<sample>[^_]*)_Channel.*_Seq(?P<name>\d{4})\.nd2$"
         )
-        match = pattern.search(f)
+        match = pattern.search(self.stem)
         if match:
             return {
                 "sample": match.group("sample"),
