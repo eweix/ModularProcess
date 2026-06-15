@@ -191,7 +191,7 @@ class LoaderLike(MutableSequence):
         """Extend contents by an iterable."""
         super().extend([self._construct(f, **metadata) for f in iterable])
 
-    def _gather(self, root: str) -> list[str]:
+    def _gather(self, root) -> list:
         """Return a list of full file paths under :arg:`root` to load.
 
         Override in subclasses to filter by filename pattern.  Subclass
@@ -201,7 +201,7 @@ class LoaderLike(MutableSequence):
         return [join(root, f) for f in os.listdir(root)]
 
     @abstractmethod
-    def _construct(self, f: str, **metadata: Unpack[MetadataDict]):
+    def _construct(self, f, **metadata: Unpack[MetadataDict]):
         """Build a ``FileLike`` (or subclass) for the given path.
 
         Override in subclasses to return a specialised ``FileLike``.
