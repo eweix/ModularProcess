@@ -18,8 +18,9 @@ import os
 import re
 from os.path import join
 
-from modularprocessing import FileLike, LoaderLike
-from modularprocessing.modularprocessing import MetadataDict
+from nd2 import imread
+
+from modularprocess import FileLike, LoaderLike, MetadataDict
 
 
 class NISWellFile(FileLike):
@@ -45,7 +46,6 @@ class NISWellFile(FileLike):
         return {"name": None, "expID": None, "sample": None, "date": None}
 
     def load(self):
-        from nd2 import imread
 
         return imread(self.path)
 
@@ -89,7 +89,6 @@ class NISPointFile(FileLike):
         return {"name": None, "expID": None, "sample": None, "date": None}
 
     def load(self):
-        from nd2 import imread
 
         return imread(self.path)
 

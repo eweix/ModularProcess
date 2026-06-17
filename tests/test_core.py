@@ -10,8 +10,7 @@ import os
 import pytest
 from typing_extensions import Unpack
 
-from modularprocessing import FileLike, LoaderLike, ProcessLike
-from modularprocessing.modularprocessing import MetadataDict
+from modularprocess import FileLike, LoaderLike, MetadataDict, ProcessLike
 
 # ---------------------------------------------------------------------------
 # FileLike
