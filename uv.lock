@@ -53,11 +53,8 @@ wheels = [
 
 [[package]]
 name = "modularprocess"
-version = "0.2.2"
+version = "0.3.0"
 source = { editable = "." }
-dependencies = [
-    { name = "typing-extensions" },
-]
 
 [package.dev-dependencies]
 dev = [
@@ -68,7 +65,6 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "typing-extensions", specifier = ">=4.15.0" }]
 
 [package.metadata.requires-dev]
 dev = [
