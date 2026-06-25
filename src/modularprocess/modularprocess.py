@@ -9,7 +9,7 @@ import datetime
 import os
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, MutableSequence
-from os.path import join
+from os.path import basename, dirname, join, splitext
 from typing import Union
 
 Date = Union[str, datetime.date, datetime.datetime]
@@ -34,8 +34,8 @@ class FileLike(dict):
         # instantiate dictionary on self
         super().__init__(*args, **kwargs)
         self["path"] = path
-        self["parent"] = os.path.dirname(path)
-        self["stem"] = os.path.basename(path)
+        self["parent"] = dirname(path)
+        self["stem"], self["ext"] = splitext(basename(path))
         name = kwargs.get("name", None)
         if name is None:
             self["name"] = self["stem"]
