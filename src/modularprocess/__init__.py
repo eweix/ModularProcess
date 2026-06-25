@@ -15,11 +15,10 @@ Typical usage::
         data = item.load()
 """
 
-from .modularprocess import FileLike, LoaderLike, MetadataDict, ProcessLike
+from .modularprocess import FileLike, LoaderLike, ProcessLike
 
 __all__ = [
     "FileLike",
     "LoaderLike",
     "ProcessLike",
-    "MetadataDict",
 ]
