@@ -53,7 +53,7 @@ wheels = [
 
 [[package]]
 name = "modularprocess"
-version = "0.3.0"
+version = "0.3.1"
 source = { editable = "." }
 
 [package.dev-dependencies]
