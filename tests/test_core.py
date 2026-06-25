@@ -8,9 +8,8 @@ import datetime
 import os
 
 import pytest
-from typing_extensions import Unpack
 
-from modularprocess import FileLike, LoaderLike, MetadataDict, ProcessLike
+from modularprocess import FileLike, LoaderLike, ProcessLike
 
 # ---------------------------------------------------------------------------
 # FileLike
@@ -20,38 +19,21 @@ from modularprocess import FileLike, LoaderLike, MetadataDict, ProcessLike
 class MinimalFile(FileLike):
     """Dummy FileLike used for testing."""
 
-    def _parse_path(self) -> MetadataDict:
-        return {
-            "name": "test",
-            "expID": "ABC-01-001",
-            "sample": "S1",
-            "date": "2025-01-15",
-        }
+    def __init__(self, path: str, **kwargs):
+        super().__init__(path, **kwargs)
+        pass
 
     def load(self):
         return "data"
 
 
-def test_parseless_raises_typeerror():
-    """No _parse_path method raises typeerror."""
-
-    class ParselessFile(FileLike):
-        """FileLike that lacks a _parse_path implementation."""
-
-        def load(self):
-            return "data"
-
-    with pytest.raises(TypeError):
-        ParselessFile("/some/path/file.csv")
-
-
-def test_loadless_raises_typeerror():
+def test_loadless_raises_notimplemented():
     """No load method raises typeerror."""
 
     class LoadlessFile(FileLike):
         """Filelike without load implementation."""
 
-        def _parse_path(self) -> MetadataDict:
+        def _parse_path(self):
             return {
                 "name": "test",
                 "expID": "ABC-01-001",
@@ -59,8 +41,9 @@ def test_loadless_raises_typeerror():
                 "date": "2025-01-15",
             }
 
-    with pytest.raises(TypeError):
-        LoadlessFile("/some/path/file.csv")
+    with pytest.raises(NotImplementedError):
+        f = LoadlessFile("/some/path/file.csv")
+        f.load()
 
 
 def test_minimal_file_constructs():
@@ -69,7 +52,6 @@ def test_minimal_file_constructs():
     assert f.path == "/data/2025-01-15_ABC-01-001_S1_test.csv"
     assert f.stem == "2025-01-15_ABC-01-001_S1_test.csv"
     assert f.parent == "/data"
-    assert f.canonical == "2025-01-15_ABC-01-001_S1_test"
     assert f.load() == "data"
 
 
@@ -78,22 +60,22 @@ def test_metadata_override_takes_precedence():
     f = MinimalFile(
         "/data/2025-01-15_ABC-01-001_S1_test.csv",
         name="override_name",
-        expID="OVR-99-888",
+        sample_id="OVR-99-888",
     )
-    print(f.canonical)
-    assert "override_name" in f.canonical
-    assert "OVR-99-888" in f.canonical
+    print(f["name"])
+    assert f["name"] == "override_name"
+    assert f["sample_id"] == "OVR-99-888"
 
 
 def test_date_override_str():
     f = MinimalFile("/data/file.csv", date="2024-12-01")
-    print(f.canonical)
-    assert f.canonical.startswith("2024-12-01")
+    print(f["date"])
+    assert f["date"].startswith("2024-12-01")
 
 
 def test_date_override_datetime():
-    f = MinimalFile("/data/file.csv", date=datetime.date(2024, 6, 15))  # type: ignore - date can take datetime.date
-    assert f.canonical.startswith("2024-06-15")
+    f = MinimalFile("/data/file.csv", date=datetime.date(2024, 6, 15))
+    assert f["date"].startswith("2024-06-15")
 
 
 def test_date_defaults_to_today():
@@ -102,15 +84,15 @@ def test_date_defaults_to_today():
     class NoDateFile(FileLike):
         """FileLike that never provides a date (tests fallback to today)."""
 
-        def _parse_path(self) -> MetadataDict:
-            return {"name": "x", "expID": "x", "sample": "x", "date": None}
+        def _parse_path(self):
+            return {"name": "x", "sample_id": "x", "date": None}
 
         def load(self):
             pass
 
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     f = NoDateFile("/data/file.csv")
-    assert f.canonical.startswith(today)
+    assert f["date"].startswith(today)
 
 
 def test_canonical_contains_none_when_missing():
@@ -119,31 +101,13 @@ def test_canonical_contains_none_when_missing():
     class NameOnlyFile(FileLike):
         """FileLike that only provides a name, leaving other fields None."""
 
-        def _parse_path(self) -> MetadataDict:
-            return {"name": "only_name", "expID": None, "sample": None, "date": None}
-
         def load(self):
             pass
 
-    f = NameOnlyFile("/data/file.csv")
+    f = NameOnlyFile("/data/file.csv", name="only_name")
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    assert f.canonical == f"{today}_None_None_only_name"
-
-
-def test_canonize_renames_file(tmp_path):
-    d = tmp_path / "raw"
-    d.mkdir()
-    src = d / "old_name.csv"
-    src.write_text("a,b\n1,2")
-
-    f = MinimalFile(str(src))
-
-    target = d / f"{f.canonical}.csv"
-
-    f.canonize()
-    assert target.exists()
-    assert not src.exists()
-    assert target.read_text() == "a,b\n1,2"
+    assert f["date"] == today
+    assert f["name"] == "only_name"
 
 
 # ---------------------------------------------------------------------------
@@ -152,8 +116,8 @@ def test_canonize_renames_file(tmp_path):
 
 
 class MinimalLoader(LoaderLike):
-    def _construct(self, f: str, **metadata: Unpack[MetadataDict]):
-        return MinimalFile(f)
+    def _construct(self, f: str, **kwargs):
+        return MinimalFile(f, **kwargs)
 
 
 def test_constructless_raises_typeerror():
@@ -229,7 +193,7 @@ def test_loaderlike_custom_construct(tmp_path):
     """Subclass _construct returns a custom FileLike."""
 
     class CustomFile(FileLike):
-        def _parse_path(self) -> MetadataDict:
+        def _parse_path(self):
             return {"name": "c", "expID": "c", "sample": "c", "date": None}
 
         def load(self):
@@ -252,8 +216,8 @@ def test_loaderlike_metadata_propagates_to_files(tmp_path):
             return MinimalFile(f, **metadata)
 
     (tmp_path / "file.csv").write_text("")
-    loader = InspectLoader(str(tmp_path), expID="OVERRIDDEN", isdir=True)
-    assert "OVERRIDDEN" in loader.items[0].canonical
+    loader = InspectLoader(str(tmp_path), sample_id="OVERRIDDEN", isdir=True)
+    assert loader.items[0]["sample_id"] == "OVERRIDDEN"
 
 
 # ---------------------------------------------------------------------------
