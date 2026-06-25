@@ -20,7 +20,7 @@ from os.path import join
 
 from nd2 import imread
 
-from modularprocess import FileLike, LoaderLike, MetadataDict
+from modularprocess import FileLike, LoaderLike
 
 
 class NISWellFile(FileLike):
@@ -31,22 +31,18 @@ class NISWellFile(FileLike):
         Point<sample>_Channel<...>_Seq<4-digit-seq>.nd2
     """
 
-    def _parse_path(self) -> MetadataDict:
-        pattern = re.compile(
-            r"Point(?P<sample>.*)_Channel(.*)_Seq(?P<name>\d{4})\.nd2$"
-        )
-        match = pattern.search(self.stem)
+    def __init__(self, path: str, **kwargs):
+        pattern = r"Point(?P<sample>.*)_Channel(.*)_Seq(?P<name>\d{4})\.nd2$"
+        stem = os.path.basename(path)
+        match = re.search(pattern, stem)
         if match:
-            return {
-                "sample": match.group("sample"),
-                "name": match.group("name"),
-                "date": None,
-                "expID": None,
-            }
-        return {"name": None, "expID": None, "sample": None, "date": None}
+            sample_id = kwargs.get("sample_id", match.group("sample"))
+            name = kwargs.get("name", match.group("name"))
+            super().__init__(path, sample_id=sample_id, name=name, **kwargs)
+        else:
+            super().__init__(path, **kwargs)
 
     def load(self):
-
         return imread(self.path)
 
 
@@ -74,19 +70,16 @@ class NISPointFile(FileLike):
         Point<sample>_Channel<...>_Seq<4-digit-seq>.nd2
     """
 
-    def _parse_path(self) -> MetadataDict:
-        pattern = re.compile(
-            r"^Point(?P<sample>[^_]*)_Channel.*_Seq(?P<name>\d{4})\.nd2$"
-        )
-        match = pattern.search(self.stem)
+    def __init__(self, path: str, **kwargs):
+        pattern = r"Point(?P<sample>.*)_Channel(.*)_Seq(?P<name>\d{4})\.nd2$"
+        stem = os.path.basename(path)
+        match = re.search(pattern, stem)
         if match:
-            return {
-                "sample": match.group("sample"),
-                "name": match.group("name"),
-                "date": None,
-                "expID": None,
-            }
-        return {"name": None, "expID": None, "sample": None, "date": None}
+            sample_id = kwargs.get("sample_id", match.group("sample"))
+            name = kwargs.get("name", match.group("name"))
+            super().__init__(path, sample_id=sample_id, name=name, **kwargs)
+        else:
+            super().__init__(path, **kwargs)
 
     def load(self):
 
